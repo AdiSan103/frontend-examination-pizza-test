@@ -1,18 +1,20 @@
 <template>
   <main>
     <header>
-      <img :src="LogoImg" alt="logo" />
-      <ul>
-        <li><Button href="#" label="Home" /></li>
-        <li><Button href="#" label="Order" /></li>
-        <li><Button href="#" label="About" /></li>
-        <li><Button href="#" label="Blog" /></li>
-        <li><Button href="#" label="Contact Us" /></li>
-      </ul>
-      <ul>
-        <li><Button href="#" label="Login" /></li>
-        <li><Button label="Register" /></li>
-      </ul>
+      <div class="content">
+        <img :src="LogoImg" alt="logo" />
+        <ul>
+          <li><Button href="#" label="Home" /></li>
+          <li><Button href="#" label="Order" /></li>
+          <li><Button href="#" label="About" /></li>
+          <li><Button href="#" label="Blog" /></li>
+          <li><Button href="#" label="Contact Us" /></li>
+        </ul>
+        <ul>
+          <li><Button href="#" label="Login" /></li>
+          <li><Button label="Register" /></li>
+        </ul>
+      </div>
     </header>
     <!--  -->
     <section class="banner">
@@ -22,10 +24,19 @@
     <section class="order">
       <div class="right">
         <h2>Choose Your Pizza</h2>
-        <div class="items">
-          <Card />
-          <Card />
-          <Card />
+        <p v-if="PizzaListJson.length === 0">Loading..</p>
+        <div class="items" v-else>
+          <Card
+            v-for="(item, index) in PizzaListJson.data"
+            :key="index"
+            :image="'/src/assets/img/pizza/' + item.name + '.png'"
+            :name="item.name"
+            :price="item.price"
+            :finalPrice="item.discount.final_price"
+            :discountActive="item.discount.is_active"
+            :active="item?.id == selectedPizza?.id ? true : false"
+            @click="handlePizza(item)"
+          />
         </div>
       </div>
       <div class="left">
@@ -66,30 +77,27 @@
     <section class="custom">
       <h2>Custom Pizza</h2>
       <h6>Size</h6>
-      <ul>
+      <p v-if="PizzaSizeItem.length === 0">Loading..</p>
+      <ul v-else>
         <RadioButton
-          v-model="selectedValue"
-          label="Option 1"
+          v-for="(item, index) in PizzaSizeItem"
+          :key="index"
+          v-model="selectedCustomSize"
+          :label="item.name"
           name="group1"
-          value="option1"
-        />
-        <RadioButton
-          v-model="selectedValue"
-          label="Option 1"
-          name="group1"
-          value="option1"
-        />
-        <RadioButton
-          v-model="selectedValue"
-          label="Option 1"
-          name="group1"
-          value="option1"
+          :value="item.extra_price"
         />
       </ul>
       <h6>Toppings</h6>
+      <p v-if="PizzaToppingItem.length === 0">Loading..</p>
       <div class="toppings">
-        <Button label="outline" variant="outline" />
-        <Button label="disabled" variant="disabled" />
+        <Button
+          v-for="(item, index) in PizzaToppingItem"
+          :key="index"
+          :label="item.name"
+          :variant="selectedPizza.toppings.includes(item.id) ? 'outline' : 'disabled'"
+        />
+        <!-- <Button label="disabled" variant="disabled" /> -->
       </div>
     </section>
     <!--  -->
@@ -171,6 +179,8 @@
 </template>
 
 <script setup>
+import { onMounted, ref } from "vue";
+
 import Button from "../components/Button.vue";
 import Card from "../components/Card.vue";
 import LogoImg from "../assets/img/logo.svg";
@@ -184,4 +194,27 @@ import IconCall from "../assets/img/icons/phone.svg";
 import IconWhatsapp from "../assets/img/icons/whatsapp.svg";
 import IconLocation from "../assets/img/icons/location.svg";
 import Separator from "../components/Separator.vue";
+
+import PizzaListJson from "../store/json/pizza-list.json";
+import PizzaSizeJson from "../store/json/size-list.json";
+import PizzaToppingJson from "../store/json/topping-list.json";
+
+const PizzaListItem = ref([]);
+const PizzaSizeItem = ref([]);
+const PizzaToppingItem = ref([]);
+
+const selectedCustomSize = ref();
+const selectedPizza = ref();
+
+const handlePizza = (item) => {
+  selectedPizza.value = item;
+};
+
+onMounted(() => {
+  PizzaListItem.value = PizzaListJson.data;
+  PizzaSizeItem.value = PizzaSizeJson.data;
+  PizzaToppingItem.value = PizzaToppingJson.data;
+  //
+  selectedPizza.value = PizzaListItem.value[0];
+});
 </script>

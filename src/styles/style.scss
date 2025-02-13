@@ -94,9 +94,7 @@ $color5: #F8F8F6;
 // defined class
 .container {
   width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-  
+
   @media (min-width: 640px) { // sm
     max-width: 640px;
   }
@@ -113,5 +111,3 @@ $color5: #F8F8F6;
     max-width: 1536px;
   }
 }
-
-

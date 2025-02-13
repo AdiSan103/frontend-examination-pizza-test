@@ -1,12 +1,14 @@
 <template>
-  <div class="card">
-    <img :src="ImgRibbon" alt="ribbon" class="ribbon" />
-    <img :src="ImgSample" alt="img" class="product" />
+  <div :class="['card', active ? 'active' : '']">
+    <img :src="ImgRibbon" alt="ribbon" class="ribbon" v-if="discountActive" />
+    <img :src="image" alt="img" class="product" />
     <div class="content">
-      <h6>Cheese Pizza</h6>
+      <h6>{{ name }}</h6>
       <div class="price">
-        <p class="after">$8.00</p>
-        <p class="before"><s>$10.00</s></p>
+        <p class="after">${{ finalPrice }}</p>
+        <p class="before" v-if="discountActive">
+          <s>${{ price }}</s>
+        </p>
       </div>
     </div>
   </div>
@@ -15,6 +17,16 @@
 <script setup>
 import ImgSample from "../assets/img/pizza/Cheese Pizza.png";
 import ImgRibbon from "../assets/img/ribbon.svg";
+
+// Define props
+defineProps({
+  image: String, // Product image URL
+  name: String, // Product name
+  price: Number, // Original price
+  finalPrice: Number, // Discounted price
+  discountActive: Boolean, // Check if discount is active
+  active: Boolean,
+});
 </script>
 
 <style lang="scss" scoped>
@@ -87,7 +99,8 @@ import ImgRibbon from "../assets/img/ribbon.svg";
   }
 }
 
-.card:active {
+.card:active,
+.card.active {
   background-color: $color1;
   color: $color5;
 

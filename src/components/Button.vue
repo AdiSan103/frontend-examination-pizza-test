@@ -9,7 +9,8 @@ interface Props {
   type?: "button" | "submit" | "reset";
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
+
 </script>
 
 <template>
@@ -68,11 +69,21 @@ const props = defineProps<Props>();
   }
 
   &.outline {
-    background: transparent;
+    background-color: transparent;
     border:1.6px solid rgba(51, 51, 51, 0.5); 
     border-radius: 50px;
     padding: 14px 12px; 
     color: black;
+  }
+
+  &.outline:hover {
+    border: 4px solid $color1;
+    color: $color1;
+  }
+
+  &.outline:hover {
+    border: 1px solid $color1;
+    color: $color1;
   }
 
   &.disabled {

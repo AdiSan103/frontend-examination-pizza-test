@@ -26,7 +26,7 @@ const onChange = () => {
       @change="onChange"
     />
     <span class="custom"></span>
-    {{ label }}
+    {{ label }} <span class="price">(${{ value }})</span>
   </label>
 </template>
 
@@ -37,8 +37,11 @@ const onChange = () => {
   display: flex;
   align-items: center;
   cursor: pointer;
-  font-size: 16px;
   gap: 8px;
+  font-weight: 400;
+  font-size: 20px;
+  line-height: 27.24px;
+  letter-spacing: 0%;
 
   input {
     display: none;
@@ -67,6 +70,14 @@ const onChange = () => {
   input:checked + .custom::before {
     width: 10px;
     height: 10px;
+  }
+
+  .price {
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 27.24px;
+    letter-spacing: 0%;
+    color:rgba(51, 51, 51, 0.5);
   }
 }
 </style>

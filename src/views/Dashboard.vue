@@ -1,6 +1,12 @@
 <template>
+  <PopUp v-if="popupStore.status"/>
   <main>
-    <header>
+    <!-- menu -->
+    <div class="menu" @click="handleMenu">
+      <img v-if="MenuStatus" :src="HamburgerMenu" alt="menu" />
+      <img v-else :src="CloseMenu" alt="menu" />
+    </div>
+    <header :class="[MenuStatus == false ? 'active' : '']">
       <div class="content">
         <img :src="LogoImg" alt="logo" />
         <ul>
@@ -40,37 +46,7 @@
         </div>
       </div>
       <div class="left">
-        <div class="popup">
-          <h6>Payment Summary</h6>
-          <ul>
-            <li>
-              <p>Veggie Pizza</p>
-              <span>8$</span>
-            </li>
-            <li>
-              <p>Veggie Pizza</p>
-              <span>8$</span>
-            </li>
-            <li>
-              <p>Veggie Pizza</p>
-              <span>8$</span>
-            </li>
-            <li>
-              <p>Veggie Pizza</p>
-              <span>8$</span>
-            </li>
-            <li>
-              <p>Veggie Pizza</p>
-              <span>8$</span>
-            </li>
-          </ul>
-          <Separator />
-          <div class="total">
-            <p>Total</p>
-            <span>8$</span>
-          </div>
-          <Button label="Order Now" />
-        </div>
+        <CardOrder :items="OrderCart" />
       </div>
     </section>
     <!--  -->
@@ -82,24 +58,28 @@
         <RadioButton
           v-for="(item, index) in PizzaSizeItem"
           :key="index"
-          v-model="selectedCustomSize"
+          @click="handlePizzaSize(item)"
           :label="item.name"
           name="group1"
-          :value="item.extra_price"
         />
       </ul>
       <h6>Toppings</h6>
       <p v-if="PizzaToppingItem.length === 0">Loading..</p>
       <div class="toppings">
-        <Button
-          v-for="(item, index) in PizzaToppingItem"
-          :key="index"
-          :label="item.name"
-          :variant="selectedPizza.toppings.includes(item.id) ? 'outline' : 'disabled'"
-        />
+        <template v-for="(item, index) in PizzaToppingItem" :key="index">
+          <CheckBox
+            v-model="selectedTopping"
+            :value="item.id"
+            :label="item.name"
+            :variant="selectedPizza.toppings.includes(item.id) ? 'outline' : 'disabled'"
+            :checked="selectedTopping.includes(item.id) ? 'yes' : 'no'"
+          />
+        </template>
         <!-- <Button label="disabled" variant="disabled" /> -->
       </div>
     </section>
+    <!--  -->
+    <CardOrder class="cardorder-mobile" :items="OrderCart" />
     <!--  -->
     <footer>
       <Separator />
@@ -179,7 +159,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { onMounted, ref, toRaw, watch } from "vue";
 
 import Button from "../components/Button.vue";
 import Card from "../components/Card.vue";
@@ -194,10 +174,25 @@ import IconCall from "../assets/img/icons/phone.svg";
 import IconWhatsapp from "../assets/img/icons/whatsapp.svg";
 import IconLocation from "../assets/img/icons/location.svg";
 import Separator from "../components/Separator.vue";
+import HamburgerMenu from "../assets/img/icons/hamburger-menu.svg";
+import CloseMenu from "../assets/img/icons/close-menu.svg";
 
 import PizzaListJson from "../store/json/pizza-list.json";
 import PizzaSizeJson from "../store/json/size-list.json";
 import PizzaToppingJson from "../store/json/topping-list.json";
+import CardOrder from "../components/CardOrder.vue";
+
+import { useCartStore } from "../store/cart"; // Adjust the path if necessary
+import CheckBox from "../components/CheckBox.vue";
+import PopUp from "../components/PopUp.vue";
+import { usePopupStore } from '../store/popUp'; // adjust the path to where your store is located
+
+const cart = useCartStore();
+const popupStore = usePopupStore();
+
+const PopUpStatus = ref(true);
+const MenuStatus = ref(true);
+const OrderCart = ref([]);
 
 const PizzaListItem = ref([]);
 const PizzaSizeItem = ref([]);
@@ -205,16 +200,76 @@ const PizzaToppingItem = ref([]);
 
 const selectedCustomSize = ref();
 const selectedPizza = ref();
+const selectedTopping = ref([]);
+
+// To show the popup, you can call:
+popupStore.showPopup();
+
+// To hide the popup, you can call:
+popupStore.hidePopup();
 
 const handlePizza = (item) => {
   selectedPizza.value = item;
+  //
+  cart.addPizza(item.id);
+  cart.addPizzaName(item.name);
+  cart.addPizzaPrice(item.price);
 };
 
+const handleMenu = () => {
+  MenuStatus.value = !MenuStatus.value;
+};
+
+const handlePizzaSize = (item) => {
+  selectedCustomSize.value = item;
+  //
+  cart.addSize(item.id);
+  cart.addSizeName(item.name);
+  cart.addSizePrice(item.extra_price);
+};
+
+// do first run apps...
 onMounted(() => {
   PizzaListItem.value = PizzaListJson.data;
   PizzaSizeItem.value = PizzaSizeJson.data;
   PizzaToppingItem.value = PizzaToppingJson.data;
   //
+  selectedCustomSize.value = PizzaSizeItem.value[0];
   selectedPizza.value = PizzaListItem.value[0];
+
+  cart.addPizza(JSON.stringify(selectedPizza.value.id));
+  cart.addPizzaName(JSON.stringify(selectedPizza.value.name));
+  cart.addPizzaPrice(JSON.stringify(selectedPizza.value.price));
+
+  cart.addSize(JSON.stringify(selectedCustomSize.value.id));
+  cart.addSizeName(JSON.stringify(selectedCustomSize.value.name));
+  cart.addSizePrice(JSON.stringify(selectedCustomSize.value.extra_price));
+});
+
+
+
+watch(() => {
+  const normalArray = [...selectedTopping.value]; //these case proxyArray
+  cart.addTopping(JSON.stringify(toRaw(normalArray)));
+
+  //
+  OrderCart.value = [
+    // 1. pizza
+    { title: cart.pizzaName, price: cart.pizzaPrice },
+    // 2. size
+    { title: cart.sizeName, price: cart.sizePrice },
+    // 3. toppings (filter by toppingsId)
+     // 3. toppings (filter by toppingsId)
+  ...PizzaToppingItem.value.filter(item => cart.toppingsId.includes(item.id)).map(item => ({
+    title: item.name,
+    price: item.price,
+  }))
+  ];
+
+  // console.log("-------------");
+  // console.log("pizza id : " + cart.pizzaId);
+  // console.log("size id : " + cart.sizeId);
+  // console.log("topping id : " + cart.toppingsId);
+  // console.log("-------------");
 });
 </script>

@@ -11,9 +11,9 @@ interface Props {
 defineProps<Props>();
 const emit = defineEmits(["update:modelValue"]);
 
-const onChange = () => {
-  emit("update:modelValue", value);
-};
+// const onChange = () => {
+//   emit("update:modelValue", value);
+// };
 </script>
 
 <template>
@@ -22,8 +22,6 @@ const onChange = () => {
       type="radio"
       :name="name"
       :value="value"
-      :checked="modelValue === value"
-      @change="onChange"
     />
     <span class="custom"></span>
     {{ label }} <span class="price">(${{ value }})</span>

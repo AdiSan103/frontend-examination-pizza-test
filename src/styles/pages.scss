@@ -80,7 +80,7 @@ header {
     .content {
       flex-direction: column;
       gap: 40px;
-      margin: 0;
+      margin: auto;
 
       p {
         @extend .text-2xl;
